@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        form {
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .messages {
+            margin-top: 20px;
+        }
+        .message-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .decrypt-form {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .decrypt-form input[type="text"] {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Envía tu mensaje secreto</h2>
+    <form id="contactForm">
+        <label for="message">Mensaje:</label>
+        <textarea id="message" name="message" rows="6" required></textarea>
+        <input type="submit" value="Enviar mensaje">
+    </form>
+    <div class="messages" id="messages"></div>
+</div>
+
+<script>
+    const messages = [];
+
+    document.getElementById('contactForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const message = document.getElementById('message').value;
+
+        // Encrypt message using AES encryption
+        const encryptedMessage = CryptoJS.AES.encrypt(message, '123456789').toString();
+
+        // Store encrypted message in the messages array
+        messages.push(encryptedMessage);
+
+        // Update the message list
+        updateMessages();
+
+        // Clear form fields after submission
+        document.getElementById('message').value = '';
+    });
+
+    function updateMessages() {
+        const messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML = '';
+
+        messages.forEach((encryptedMessage, index) => {
+            const messageItem = document.createElement('div');
+            messageItem.className = 'message-item';
+            messageItem.innerHTML = `
+                <p>Mensaje encriptado: ${encryptedMessage}</p>
+                <div class="decrypt-form">
+                    <input type="text" placeholder="Contraseña" id="password-${index}">
+                    <button onclick="decryptMessage(${index})">Desencriptar</button>
+                </div>
+                <p id="decrypted-message-${index}" class="decrypted-message"></p>
+            `;
+            messagesDiv.appendChild(messageItem);
+        });
+    }
+
+    function decryptMessage(index) {
+        const password = document.getElementById(`password-${index}`).value;
+        const encryptedMessage = messages[index];
+        const decryptedMessage = CryptoJS.AES.decrypt(encryptedMessage, password).toString(CryptoJS.enc.Utf8);
+
+        if (decryptedMessage) {
+            document.getElementById(`decrypted-message-${index}`).innerText = `Mensaje desencriptado: ${decryptedMessage}`;
+        } else {
+            document.getElementById(`decrypted-message-${index}`).innerText = `Contraseña incorrecta o mensaje corrupto`;
+        }
+    }
+</script>
+
+</body>
+</html>
